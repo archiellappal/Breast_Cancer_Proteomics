@@ -80,31 +80,19 @@ truelabel_krug <- c(rep("Basal",29), rep("LumA", 57), rep("LumB", 17), rep("Her2
 # #Make separate lists for each PAM50 data type 
 #Samples are classified into five types by the PAM50. Luminal A and Luminal B correspond to Luminal-like, and Normal-like corresponds to tissue patterns found in normal breast tissue
 samples_basal_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "Basal"]
-#samples_luma_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "LumA"]
-#samples_lumb_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "LumB"]
-#samples_normal_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "Normal-like"]
-#samples_her2_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "Her2"]
+
 
 # Select the columns from data_matrix that match the samples in samples_to_select
 subset_basal <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_basal_krug)])
-#subset_luma <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_luma_krug)])
-#subset_lumb <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_lumb_krug)])
-#subset_normal <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_normal_krug)])
-#subset_her2 <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_her2_krug)])
+
 
 #Convert the dataframe value to numeric 
 subset_basal <- mutate_all(subset_basal, function(x) as.numeric(as.character(x)))
-#subset_luma <- mutate_all(subset_luma, function(x) as.numeric(as.character(x)))
-#subset_lumb <- mutate_all(subset_lumb, function(x) as.numeric(as.character(x)))
-#subset_normal <- mutate_all(subset_normal, function(x) as.numeric(as.character(x)))
-#subset_her2 <- mutate_all(subset_her2, function(x) as.numeric(as.character(x)))
+
 
 #Transposing the matrix 
 subset_basal <- t(subset_basal)
-#subset_her2 <- t(subset_her2)
-#subset_luma <- t(subset_luma)
-#subset_lumb <- t(subset_lumb)
-#subset_normal <- t(subset_normal)
+
 
 ########### SNF tool for Basal and Luminal samples ####################
 
@@ -520,53 +508,4 @@ barplot(x, showCategory=25)
 
 #Saving the data matrices as an RData object 
 #save.image("proteomics_data.RData")
-################## Clustering based on genes - Proteomics ############
-
-#Standard normalize these matrices 
-#subset_basal_norm <- standardNormalization(subset_basal)
-#subset_luma_norm <- standardNormalization(subset_luma)
-#subset_lumb_norm <- standardNormalization(subset_lumb)
-#subset_normal_norm <- standardNormalization(subset_normal)
-#subset_her2_norm <- standardNormalization(subset_her2)
-
-#Calculate the pair-wise distance 
-basal_dist_matrix = (dist2(as.matrix(subset_basal),as.matrix(subset_basal)))^(1/2)
-luma_dist_matrix = (dist2(as.matrix(subset_luma),as.matrix(subset_luma)))^(1/2)
-lumb_dist_matrix = (dist2(as.matrix(subset_lumb),as.matrix(subset_lumb)))^(1/2)
-normal_dist_matrix = (dist2(as.matrix(subset_normal),as.matrix(subset_normal)))^(1/2)
-her2_dist_matrix = (dist2(as.matrix(subset_her2),as.matrix(subset_her2)))^(1/2)
-
-#Constructing the similarity graphs 
-W1 = affinityMatrix(basal_dist_matrix, K, alpha)
-W2 = affinityMatrix(luma_dist_matrix, K, alpha)
-W3 = affinityMatrix(lumb_dist_matrix, K, alpha)
-W4 = affinityMatrix(normal_dist_matrix, K, alpha)
-W5 = affinityMatrix(her2_dist_matrix, K, alpha)
-
-## then the overall matrix can be computed by similarity network fusion(SNF):
-W = SNF(list(W1,W2, W3, W4, W5), K, T)
-
-#Truelabel - is the PAM50 subtypes 
-truelabel = c(matrix(1,100,1),matrix(2,100,1));
-
-## You can display clusters in the data by the following function
-## where C is the number of clusters.
-C = 2 # number of clusters
-group = spectralClustering(W_Basal,C); # the final subtypes information
-
-## Get a matrix containing the group information
-## for the samples such as the SpectralClustering result and the True label
-M_label=cbind(group,truelabel_krug)
-colnames(M_label)=c("spectralClustering","TrueLabel")
-
-
-## Use the getColorsForGroups function to assign a color to each group
-## NB is more than 8 groups, you will have to input a vector
-## of colors into the getColorsForGroups function
-M_label_colors=t(apply(M_label,1,getColorsForGroups))
-## or choose you own colors for each label, for example:
-M_label_colors=cbind("spectralClustering"=getColorsForGroups(M_label[,"spectralClustering"],
-                                                             colors=c("blue","green")),"TrueLabel"=getColorsForGroups(M_label[,"TrueLabel"],
-
-                                                                    
-                                                                                                                      
+                
