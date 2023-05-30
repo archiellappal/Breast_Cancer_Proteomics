@@ -77,33 +77,34 @@ T = 20; 	# Number of Iterations, usually (10~20)
 #Adding labels to the samples - PAm50 subtype 
 truelabel_krug <- c(rep("Basal",29), rep("LumA", 57), rep("LumB", 17), rep("Her2", 14), rep("Normal-like", 5))
 
-# #Make separate lists for each PAM50 data type m
+# #Make separate lists for each PAM50 data type 
+#Samples are classified into five types by the PAM50. Luminal A and Luminal B correspond to Luminal-like, and Normal-like corresponds to tissue patterns found in normal breast tissue
 samples_basal_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "Basal"]
-samples_luma_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "LumA"]
-samples_lumb_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "LumB"]
-samples_normal_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "Normal-like"]
-samples_her2_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "Her2"]
+#samples_luma_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "LumA"]
+#samples_lumb_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "LumB"]
+#samples_normal_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "Normal-like"]
+#samples_her2_krug <- metadata_krug$Sample.ID[metadata_krug$PAM50 == "Her2"]
 
 # Select the columns from data_matrix that match the samples in samples_to_select
 subset_basal <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_basal_krug)])
-subset_luma <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_luma_krug)])
-subset_lumb <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_lumb_krug)])
-subset_normal <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_normal_krug)])
-subset_her2 <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_her2_krug)])
+#subset_luma <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_luma_krug)])
+#subset_lumb <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_lumb_krug)])
+#subset_normal <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_normal_krug)])
+#subset_her2 <- as.data.frame(proteome_matrix_krug[, intersect(colnames(proteome_matrix_krug), samples_her2_krug)])
 
 #Convert the dataframe value to numeric 
 subset_basal <- mutate_all(subset_basal, function(x) as.numeric(as.character(x)))
-subset_luma <- mutate_all(subset_luma, function(x) as.numeric(as.character(x)))
-subset_lumb <- mutate_all(subset_lumb, function(x) as.numeric(as.character(x)))
-subset_normal <- mutate_all(subset_normal, function(x) as.numeric(as.character(x)))
-subset_her2 <- mutate_all(subset_her2, function(x) as.numeric(as.character(x)))
+#subset_luma <- mutate_all(subset_luma, function(x) as.numeric(as.character(x)))
+#subset_lumb <- mutate_all(subset_lumb, function(x) as.numeric(as.character(x)))
+#subset_normal <- mutate_all(subset_normal, function(x) as.numeric(as.character(x)))
+#subset_her2 <- mutate_all(subset_her2, function(x) as.numeric(as.character(x)))
 
 #Transposing the matrix 
 subset_basal <- t(subset_basal)
-subset_her2 <- t(subset_her2)
-subset_luma <- t(subset_luma)
-subset_lumb <- t(subset_lumb)
-subset_normal <- t(subset_normal)
+#subset_her2 <- t(subset_her2)
+#subset_luma <- t(subset_luma)
+#subset_lumb <- t(subset_lumb)
+#subset_normal <- t(subset_normal)
 
 ########### SNF tool for Basal and Luminal samples ####################
 
@@ -115,32 +116,18 @@ indices_basal <- sample(ncol(subset_basal), floor(ncol(subset_basal)/2))
 subset_basal_1 <- subset_basal[,indices_basal]
 subset_basal_2 <- subset_basal[,-indices_basal]
 
-#Splitting the basal samples into two matrices 
-# create a vector of row numbers to include in the first dataframe
-indices_luma <- sample(ncol(subset_luma), floor(ncol(subset_luma)/2))
-
-# split the dataframe based on the row indices
-subset_luma_1 <- subset_luma[,indices_luma]
-subset_luma_2 <- subset_luma[,-indices_luma]
 
 #Constructing the pair-wise distnace matrix 
 basal_dist_matrix_1 = (dist2(as.matrix(subset_basal_1),as.matrix(subset_basal_1)))^(1/2)
 basal_dist_matrix_2 = (dist2(as.matrix(subset_basal_2),as.matrix(subset_basal_2)))^(1/2)
 
-luma_dist_matrix_1 = (dist2(as.matrix(subset_luma_1),as.matrix(subset_luma_1)))^(1/2)
-luma_dist_matrix_2 = (dist2(as.matrix(subset_luma_2),as.matrix(subset_luma_2)))^(1/2)
-
 #Constructing the similarity graphs
 W_Basal_1 = affinityMatrix(basal_dist_matrix_1, K, alpha)
 W_Basal_2 = affinityMatrix(basal_dist_matrix_2, K, alpha)
 
-W_luma_1 = affinityMatrix(luma_dist_matrix_1, K, alpha)
-W_luma_2 = affinityMatrix(luma_dist_matrix_2, K, alpha)
-
-
 ## then the overall matrix can be computed by similarity network fusion(SNF):
 W_Basal = SNF(list(W_Basal_1,W_Basal_2), K, T)
-W_Luma = SNF(list(W_luma_1,W_luma_2), K, T)
+
 
 
 # create a dendrogram for hierarchical clustering
@@ -172,31 +159,18 @@ plot.new()
 legend("topright",legend=c("ER Positive","ER negative", "PR positive", "PR negative", "NMF - Basal", "NMF - HER2", "ERBB2 negative", "ERBB2 unknown", "TNBC positive", "TNBC negative"),pch=15,col=c("firebrick3","beige", "red", "yellow", "cyan", "green", "blue", "yellow", "orange", "violet"), inset = c(-0.1,0))
 
 
-#Luminal samples 
-metadata_luma <- metadata_krug[metadata_krug$PAM50 == "LumA",]
-er_bars_luma <- ifelse(metadata_luma$ER.Updated.Clinical.Status == "positive", "firebrick3", "beige")
-pr_bars_luma <- ifelse(metadata_luma$PR.Clinical.Status== "positive", "red", "yellow")
-nmf_bars_luma <- ifelse(metadata_luma$NMF.Cluster == "Basal-I", "cyan", "green")
-erbb2_bars_luma <- ifelse(metadata_luma$ER.Updated.Clinical.Status == "negative", "blue", "yellow")
-tnbc_bars_luma <- ifelse(metadata_luma$TNBC.Updated.Clinical.Status == "positive", "orange", "violet")
-bars_luma <- cbind(er_bars_luma, pr_bars_luma, nmf_bars_luma, erbb2_bars_luma, tnbc_bars_luma)
-plot(dend_luma)
-colored_bars(colors = bars_luma, dend = dend_luma, rowLabels = c("ER", "PR", "NMF", "ERBB2", "TNBC"))
-legend("top",legend=c("ER Positive","ER negative", "PR positive", "PR negative", "Basal", "HER2", "ERBB2 negative", "ERBB2 unknown", "TNBC positive", "TNBC negative"),pch=15,col=c("firebrick3","beige", "red", "yellow", "cyan", "green", "blue", "yellow", "orange", "violet"), inset = c(-0.1,0))
-plot(0,0)
 
 ## You can display clusters in the data by the following function
 ## where C is the number of clusters.
 C = 2 # number of clusters
 group = spectralClustering(W_Basal,C); # the final subtypes information
-group_luma = spectralClustering(W_Luma, C)
+
 
 ## Visualize the clusters present in the given similarity matrix
 ## as well as some sample information
 ## In this presentation no clustering method is ran the samples
 ## are ordered in function of their group label present in the group arguments
 displayClustersWithHeatmap(W_Basal, group)
-displayClustersWithHeatmap(W_Luma, group)
 
 
 
